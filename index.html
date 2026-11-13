@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Bóveda Olquiana - Archive & Bitácora Anime</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col pb-20 md:pb-0">
+
+  <!-- Header / Banner Section -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 pt-4 pb-2 space-y-3">
+      
+      <!-- Banner dentro del contenedor central -->
+      <div class="w-full rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-xl">
+        <img src="banner.png" alt="La Bóveda Olquiana Banner" class="w-full h-auto max-h-48 md:max-h-56 object-contain object-center bg-slate-950" onerror="this.style.display='none';">
+      </div>
+
+      <!-- Barra de Pestañas (Pestaña Perfil añadida al inicio) -->
+      <div class="flex justify-start items-center pt-1 overflow-x-auto custom-scrollbar">
+        <nav class="flex items-center space-x-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/50 whitespace-nowrap">
+          <button onclick="switchTab('profile')" id="nav-profile" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow">
+            👤 Perfil
+          </button>
+          <button onclick="switchTab('essays')" id="nav-essays" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">
+            📄 Escritos PDF
+          </button>
+          <button onclick="switchTab('episodes')" id="nav-episodes" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">
+            ✍️ Opiniones de Episodios
+          </button>
+          <button onclick="switchTab('tops')" id="nav-tops" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">
+            🏆 Tops del Año
+          </button>
+        </nav>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+
+    <!-- SECCIÓN: PERFIL & FAVORITOS -->
+    <section id="tab-profile" class="space-y-8">
+      
+<!-- Bio / Info General -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-center md:items-start justify-between">
+        <div class="flex flex-col md:flex-row gap-4 items-center md:items-start text-center md:text-left">
+          <!-- Contenedor del Avatar / Imagen de Perfil -->
+          <div id="profile-avatar-container" class="w-24 h-24 rounded-2xl bg-indigo-600 flex items-center justify-center text-4xl font-black text-white shadow-lg border-2 border-indigo-400/40 shrink-0 overflow-hidden">
+            <!-- Se reemplazará dinámicamente por imagen o la letra O -->
+            O
+          </div>
+          <div class="space-y-1">
+            <h2 class="text-2xl font-bold text-slate-100">La Bóveda Olquiana</h2>
+            <p id="profile-bio" class="text-sm text-slate-400 max-w-2xl leading-relaxed">
+              Archivo personal de opiniones anime.
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 shrink-0 justify-center edit-only">
+          <button onclick="openEditBioModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-3 py-2 rounded-lg transition-colors">
+            ✏️ Editar Info
+          </button>
+          <button onclick="exportData()" title="Descargar un respaldo JSON de todo" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-3 py-2 rounded-lg transition-colors">
+            💾 Exportar
+          </button>
+          <label title="Restaurar desde un respaldo JSON" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-3 py-2 rounded-lg transition-colors cursor-pointer">
+            📂 Importar
+            <input type="file" accept="application/json,.json" class="hidden" onchange="importData(this)">
+          </label>
+          <button onclick="publishData()" title="Genera un .zip con datos.json y las imágenes de tops para subir" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-lg font-medium transition-colors">
+            📦 Publicar
+          </button>
+        </div>
+      </div>
+
+      <!-- Top 20 Animes -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+            <span>📺</span> Top 20 Animes
+          </h3>
+          <button onclick="openTopItemModal('anime')" class="edit-only bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg transition-colors">
+            + Agregar / Editar
+          </button>
+        </div>
+
+        <div id="top-animes-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-3">
+          <!-- Renderizado dinámico vía JS -->
+        </div>
+      </div>
+
+      <!-- Top 20 Personajes -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+            <span>⭐</span> Top 20 Personajes 
+          </h3>
+          <button onclick="openTopItemModal('character')" class="edit-only bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg transition-colors">
+            + Agregar / Editar
+          </button>
+        </div>
+        <div id="top-characters-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-3">
+          <!-- Renderizado dinámico vía JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SECCIÓN: ENSAYOS PDF -->
+    <section id="tab-essays" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-slate-200">Escritos</h2>
+          <p class="text-xs text-slate-400">Análisis de personajes y reflexiones</p>
+        </div>
+        <div class="flex gap-2">
+          <select id="essay-filter" onchange="filterEssays()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+        </div>
+      </div>
+
+      <div id="essays-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- SECCIÓN: DIARIO DE EPISODIOS -->
+    <section id="tab-episodes" class="hidden space-y-6">
+      <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-slate-200">Animes y Opiniones</h2>
+          <p class="text-xs text-slate-400">Notas, comentarios por episodio y opinión general en un solo lugar</p>
+        </div>
+        <div class="flex gap-2 shrink-0 edit-only">
+          <button onclick="openSeriesModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors">
+            + Nuevo Anime
+          </button>
+          <button onclick="openEpisodeModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-lg font-medium transition-colors shadow">
+            + Nueva Impresión
+          </button>
+        </div>
+      </div>
+
+      <div id="episodes-list" class="space-y-3"></div>
+    </section>
+
+    <!-- SECCIÓN: TOPS DEL AÑO -->
+    <section id="tab-tops" class="hidden space-y-6">
+      <div class="flex flex-wrap justify-between items-center gap-3 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-slate-200">Tops del Año</h2>
+          <p id="tops-count" class="text-xs text-slate-400"></p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="tops-year" onchange="changeTopYear(this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+          <button onclick="addTopYear()" class="edit-only bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-lg font-medium transition-colors">+ Año</button>
+        </div>
+      </div>
+      <div id="tops-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+      <input type="file" id="top-file-input" accept="image/*" class="hidden" onchange="onTopFileChosen(this)">
+    </section>
+
+  </main>
+
+  <!-- Mobile Navigation Bar -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-40 backdrop-blur-md bg-slate-900/90">
+    <button onclick="switchTab('profile')" id="mob-nav-profile" class="flex flex-col items-center py-1 px-3 text-indigo-400 font-medium text-xs">
+      <span class="text-lg">👤</span>
+      <span>Perfil</span>
+    </button>
+    <button onclick="switchTab('essays')" id="mob-nav-essays" class="flex flex-col items-center py-1 px-3 text-slate-400 font-medium text-xs">
+      <span class="text-lg">📄</span>
+      <span>Escritos</span>
+    </button>
+    <button onclick="switchTab('episodes')" id="mob-nav-episodes" class="flex flex-col items-center py-1 px-3 text-slate-400 font-medium text-xs">
+      <span class="text-lg">✍️</span>
+      <span>Comentarios</span>
+    </button>
+    <button onclick="switchTab('tops')" id="mob-nav-tops" class="flex flex-col items-center py-1 px-3 text-slate-400 font-medium text-xs">
+      <span class="text-lg">🏆</span>
+      <span>Tops</span>
+    </button>
+  </nav>
+
+  <!-- Modales preexistentes + Modales de Perfil -->
+  <div id="pdf-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex flex-col p-2 md:p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-t-xl p-4 flex justify-between items-center">
+      <h3 id="pdf-modal-title" class="text-sm md:text-base font-bold text-slate-200 truncate pr-4"></h3>
+      <div class="flex gap-2">
+        <a id="pdf-download-link" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 flex items-center gap-1 border border-slate-700">📥 Abrir en Pestaña</a>
+        <button onclick="closePdfModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs px-3 py-1.5 rounded-lg">✕ Cerrar</button>
+      </div>
+    </div>
+    <div class="flex-1 bg-slate-950 rounded-b-xl overflow-hidden border-x border-b border-slate-800 relative">
+      <iframe id="pdf-frame" class="w-full h-full" src=""></iframe>
+    </div>
+  </div>
+  
+<!-- Modal Editar Bio e Imagen de Perfil -->
+  <div id="bio-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md space-y-4">
+      <h3 class="text-lg font-bold text-slate-100">Editar Perfil</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">URL de la Imagen de Perfil</label>
+          <input type="text" id="avatar-input" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Descripción corta / Bio</label>
+          <textarea id="bio-input" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeEditBioModal()" class="px-4 py-2 text-xs rounded-lg bg-slate-800 text-slate-400">Cancelar</button>
+        <button onclick="saveBio()" class="px-4 py-2 text-xs rounded-lg bg-indigo-600 text-white font-medium">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cargar Item Top 20 -->
+  <div id="top-item-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md space-y-4">
+      <h3 id="top-modal-title" class="text-lg font-bold text-slate-100">Agregar al Top</h3>
+      <input type="hidden" id="top-item-type">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Posición del Ranking (1 a 20)</label>
+          <input type="number" id="top-item-rank" min="1" max="20" value="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Nombre / Título</label>
+          <input type="text" id="top-item-name" placeholder="Ej. Megumin / KonoSuba" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">URL de la Imagen (Portada / Avatar)</label>
+          <input type="text" id="top-item-image" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeTopItemModal()" class="px-4 py-2 text-xs rounded-lg bg-slate-800 text-slate-400">Cancelar</button>
+        <button onclick="saveTopItem()" class="px-4 py-2 text-xs rounded-lg bg-indigo-600 text-white font-medium">Guardar en Top</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visor de Top -->
+  <div id="top-viewer-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm hidden flex items-center justify-center p-4" onclick="if (event.target === this) closeTopViewer()">
+    <div class="w-full max-w-3xl max-h-[95vh] flex flex-col gap-3">
+      <div class="flex items-center justify-between gap-2">
+        <h3 id="top-viewer-title" class="text-sm font-bold text-slate-100 truncate"></h3>
+        <button onclick="closeTopViewer()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg">✕ Cerrar</button>
+      </div>
+      <div class="flex-1 overflow-auto custom-scrollbar rounded-lg border border-slate-800 bg-slate-950">
+        <img id="top-viewer-img" class="w-full h-auto" alt="">
+      </div>
+      <div class="flex flex-wrap gap-2 justify-end">
+        <a id="top-viewer-download" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-lg cursor-pointer">⬇ Descargar</a>
+        <button onclick="pickTopImage(topViewerCat)" class="edit-only text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg font-medium">Reemplazar imagen</button>
+        <button onclick="deleteTopImage(topViewerCat)" class="edit-only text-xs text-red-400 hover:text-red-300 px-3 py-2">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Crear / Editar Anime -->
+  <div id="series-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <h3 id="series-modal-title" class="text-lg font-bold text-slate-100">Agregar Nuevo Anime</h3>
+      <input type="hidden" id="series-id">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Título</label>
+          <input type="text" id="series-title" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">URL de Portada / Imagen</label>
+          <input type="text" id="series-image" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Estado</label>
+            <select id="series-status" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+              <option value="Viendo">Viendo</option>
+              <option value="Completado">Completado</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Pausado">Pausado</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Nota (1 - 10)</label>
+            <select id="series-score" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+              <option value="">Sin calificar</option>
+              <option value="10">10</option><option value="9">9</option><option value="8">8</option>
+              <option value="7">7</option><option value="6">6</option><option value="5">5</option>
+              <option value="4">4</option><option value="3">3</option><option value="2">2</option>
+              <option value="1">1</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Opinión General / Conclusión</label>
+          <textarea id="series-review" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeSeriesModal()" class="px-4 py-2 text-xs rounded-lg bg-slate-800 text-slate-400">Cancelar</button>
+        <button onclick="saveSeriesForm()" class="px-4 py-2 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium">Guardar Anime</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Comentario de Episodio -->
+  <div id="episode-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <h3 id="episode-modal-title" class="text-lg font-bold text-slate-100">Nuevo Comentario de Episodio</h3>
+      <input type="hidden" id="ep-id">
+      <div class="space-y-3">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Anime</label>
+            <input type="text" id="ep-anime-name" list="series-names" placeholder="Ej. KonoSuba" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+            <datalist id="series-names"></datalist>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Episodio N°</label>
+            <input type="number" id="ep-number" value="1" min="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Título del Episodio (Opcional)</label>
+          <input type="text" id="ep-title" placeholder="Ej. La gran explosión" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Opinión / Comentario (Markdown)</label>
+          <textarea id="ep-content" rows="4" placeholder="..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-slate-100"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeEpisodeModal()" class="px-4 py-2 text-xs rounded-lg bg-slate-800 text-slate-400">Cancelar</button>
+        <button onclick="saveEpisode()" class="px-4 py-2 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium">Guardar Impresión</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modo público (solo lectura): cualquier dirección web que no sea tu compu, o agregando ?lectura
+    window.__PUBLIC__ = !(location.protocol === 'file:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))
+      || new URLSearchParams(location.search).has('lectura');
+    (async () => {
+      if (window.__PUBLIC__) {
+        document.body.classList.add('public-mode');
+        try {
+          const res = await fetch('datos.json', { cache: 'no-cache' });
+          window.__DATA__ = await res.json();
+        } catch { window.__DATA__ = null; }
+      }
+      const s = document.createElement('script');
+      s.src = 'script.js';
+      document.body.appendChild(s);
+    })();
+  </script>
+</body>
+</html>
