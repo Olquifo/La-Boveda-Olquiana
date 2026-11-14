@@ -104,7 +104,8 @@ function renderProfile() {
       const item = topAnimes[i];
       const card = document.createElement('div');
       card.className = "relative group aspect-[2/3] bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow cursor-pointer";
-      card.onclick = () => openTopItemModal('anime', i + 1);
+      if (PUBLIC_MODE) card.classList.remove('cursor-pointer');
+      else card.onclick = () => openTopItemModal('anime', i + 1);
 
       if (item) {
         card.innerHTML = `
@@ -115,6 +116,7 @@ function renderProfile() {
           </div>
         `;
       } else {
+        if (PUBLIC_MODE) continue; // los puestos vacíos no se muestran al público
         card.className += " flex flex-col items-center justify-center text-slate-600 hover:border-slate-700";
         card.innerHTML = `<span class="text-xs font-bold text-slate-700">#${i + 1}</span><span class="text-[10px] text-slate-600">+ Vacío</span>`;
       }
@@ -130,7 +132,8 @@ function renderProfile() {
       const item = topCharacters[i];
       const card = document.createElement('div');
       card.className = "relative group aspect-[2/3] bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow cursor-pointer";
-      card.onclick = () => openTopItemModal('character', i + 1);
+      if (PUBLIC_MODE) card.classList.remove('cursor-pointer');
+      else card.onclick = () => openTopItemModal('character', i + 1);
 
       if (item) {
         card.innerHTML = `
@@ -141,6 +144,7 @@ function renderProfile() {
           </div>
         `;
       } else {
+        if (PUBLIC_MODE) continue; // los puestos vacíos no se muestran al público
         card.className += " flex flex-col items-center justify-center text-slate-600 hover:border-slate-700";
         card.innerHTML = `<span class="text-xs font-bold text-slate-700">#${i + 1}</span><span class="text-[10px] text-slate-600">+ Vacío</span>`;
       }
@@ -151,6 +155,7 @@ function renderProfile() {
 
 // EDICIÓN DE BIO Y AVATAR
 function openEditBioModal() {
+  if (PUBLIC_MODE) return;
   const bioInput = document.getElementById('bio-input');
   if (bioInput) bioInput.value = profileBio;
   const avatarInput = document.getElementById('avatar-input');
@@ -184,6 +189,7 @@ function saveBio() {
 
 // EDICIÓN DE ITEMS TOP 20
 function openTopItemModal(type, rank = 1) {
+  if (PUBLIC_MODE) return;
   const typeInput = document.getElementById('top-item-type');
   const rankInput = document.getElementById('top-item-rank');
   const titleEl = document.getElementById('top-modal-title');
@@ -520,6 +526,7 @@ function rateSeries(id, n) {
 
 // ---------- Modal: crear / editar anime ----------
 function openSeriesModal(id = null) {
+  if (PUBLIC_MODE) return;
   const s = id ? getSeries(id) : null;
   document.getElementById('series-id').value = s ? s.id : '';
   document.getElementById('series-modal-title').innerText = s ? 'Editar Anime' : 'Agregar Nuevo Anime';
@@ -592,6 +599,7 @@ function deleteSeries(id) {
 
 // ---------- Modal: crear / editar comentario de episodio ----------
 function openEpisodeModal(epId = null, seriesId = null) {
+  if (PUBLIC_MODE) return;
   const ep = epId ? episodes.find(e => e.id === epId) : null;
   const preset = seriesId ? getSeries(seriesId) : (activeSeriesId ? getSeries(activeSeriesId) : null);
 
@@ -670,8 +678,6 @@ const TOP_CATEGORIES = [
   { id: 'episodios',   name: () => 'Episodios del Año' },
   { id: 'lecturas',    name: () => 'Lecturas' },
   { id: 'lolis',       name: () => 'Lolis' },
-  { id: 'ocs-hombres', name: () => 'OCs Hombres' },
-  { id: 'ocs-mujeres', name: () => 'OCs Mujeres' },
   { id: 'openings',    name: () => 'Openings del Año' },
   { id: 'endings',     name: () => 'Endings del Año' },
   { id: 'ost',         name: () => 'Mejores OST' },
@@ -794,6 +800,7 @@ function changeTopYear(value) {
 }
 
 function addTopYear() {
+  if (PUBLIC_MODE) return;
   const raw = prompt('¿Qué año querés agregar? (ej. 2027)');
   if (raw === null) return;
   const y = parseInt(raw);
@@ -812,6 +819,7 @@ function onTopCardClick(catId) {
 }
 
 function pickTopImage(catId) {
+  if (PUBLIC_MODE) return;
   topPickTarget = catId;
   const input = document.getElementById('top-file-input');
   input.value = '';
@@ -901,6 +909,7 @@ async function publishData() {
   const years = new Set();
   for (const [key, dataUrl] of Object.entries(images)) {
     const [year, cat] = key.split(':');
+    if (!TOP_CATEGORIES.some(c => c.id === cat)) continue;
     const m = typeof dataUrl === 'string' && dataUrl.match(/^data:image\/([\w+]+);base64,(.*)$/);
     if (!m) continue;
     const ext = m[1].replace('jpeg', 'jpg').replace('svg+xml', 'svg');
