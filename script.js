@@ -316,7 +316,7 @@ function readJSON(key, fallback) {
 }
 
 function blankSeries(title) {
-  return { id: uid(), title, image: '', status: 'Viendo', score: null, review: '' };
+  return { id: uid(), title, image: '', status: 'Viendo', score: null, review: '', year: null };
 }
 
 function renderMd(text) {
@@ -386,10 +386,13 @@ function renderEpisodes() {
   if (!container) return;
 
   const active = activeSeriesId ? getSeries(activeSeriesId) : null;
+  const filtersEl = document.getElementById('series-filters');
   if (active) {
+    if (filtersEl) filtersEl.classList.add('hidden');
     renderThread(container, active);
   } else {
     activeSeriesId = null;
+    if (filtersEl) filtersEl.classList.remove('hidden');
     renderSeriesList(container);
   }
   updateSeriesDatalist();
@@ -397,13 +400,22 @@ function renderEpisodes() {
 
 // ---------- Lista general de animes ----------
 function renderSeriesList(container) {
+  updateSeriesFilterUI();
+  const visible = getVisibleSeries();
+  const countEl = document.getElementById('filter-count');
+  if (countEl) countEl.textContent = series.length ? `Mostrando ${visible.length} de ${series.length} animes` : '';
+
+  if (series.length > 0 && visible.length === 0) {
+    container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Ningún anime coincide con esos filtros. <button onclick="clearSeriesFilters()" class="text-indigo-400 hover:text-indigo-300 underline">Limpiar filtros</button></p>`;
+    return;
+  }
   if (series.length === 0) {
     container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Aún no hay animes. ¡Agrega el primero con "+ Nuevo Anime" o escribe una impresión!</p>`;
     return;
   }
 
   let html = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
-  series.forEach(s => {
+  visible.forEach(s => {
     const count = seriesEpisodes(s).length;
     html += `
       <div onclick="openSeries('${esc(s.id)}')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl overflow-hidden cursor-pointer transition-all shadow-md hover:shadow-indigo-500/10 flex flex-col justify-between group">
@@ -415,7 +427,7 @@ function renderSeriesList(container) {
           <span class="absolute bottom-2 left-3 right-3 font-bold text-sm text-white tracking-wide truncate">${esc(s.title)}</span>
         </div>
         <div class="p-4 flex justify-between items-center bg-slate-900">
-          <span class="text-xs text-slate-400">💬 ${count} ${count === 1 ? 'comentario' : 'comentarios'}</span>
+          <span class="text-xs text-slate-400">${s.year ? s.year + ' · ' : ''}💬 ${count} ${count === 1 ? 'comentario' : 'comentarios'}</span>
           <span class="text-xs bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-lg font-medium group-hover:bg-indigo-600 group-hover:text-white transition-colors">Ver Hilo →</span>
         </div>
       </div>`;
@@ -446,6 +458,7 @@ function renderThread(container, s) {
         <h3 class="text-lg font-bold text-slate-100 break-words">${esc(s.title)}</h3>
         <div class="flex flex-wrap items-center gap-2">
           ${statusBadge(s.status)}
+          ${s.year ? `<span class="text-xs text-slate-400">${s.year}</span>` : ''}
           <span class="text-xs text-slate-500">💬 ${eps.length} ${eps.length === 1 ? 'comentario' : 'comentarios'}</span>
         </div>
         <div>
@@ -505,6 +518,64 @@ function renderThread(container, s) {
   container.innerHTML = html;
 }
 
+// ---------- Filtros y orden de la lista de animes ----------
+let seriesFilters = { q: '', year: 'all', score: 'all', sort: 'recent' };
+
+function getVisibleSeries() {
+  const f = seriesFilters;
+  const q = f.q.trim().toLowerCase();
+  const list = series.filter(s => {
+    if (q && !s.title.toLowerCase().includes(q)) return false;
+    if (f.year === 'none' && s.year) return false;
+    if (f.year !== 'all' && f.year !== 'none' && String(s.year || '') !== f.year) return false;
+    if (f.score === 'none' && s.score) return false;
+    if (f.score !== 'all' && f.score !== 'none' && String(s.score || '') !== f.score) return false;
+    return true;
+  });
+  const byTitle = (a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' });
+  const sorters = {
+    az: byTitle,
+    za: (a, b) => byTitle(b, a),
+    'score-desc': (a, b) => (b.score ?? -1) - (a.score ?? -1) || byTitle(a, b),
+    'score-asc': (a, b) => (a.score ?? 99) - (b.score ?? 99) || byTitle(a, b),
+    'year-desc': (a, b) => (b.year ?? -1) - (a.year ?? -1) || byTitle(a, b),
+    'year-asc': (a, b) => (a.year ?? 9999) - (b.year ?? 9999) || byTitle(a, b)
+  };
+  if (sorters[f.sort]) list.sort(sorters[f.sort]); // 'recent' = orden de carga
+  return list;
+}
+
+// Rellena las opciones de año con los años que existen y deja los controles al día
+function updateSeriesFilterUI() {
+  const yearEl = document.getElementById('filter-year');
+  if (!yearEl) return;
+  const years = [...new Set(series.map(s => s.year).filter(Boolean))].sort((a, b) => b - a);
+  const hasNone = series.some(s => !s.year);
+  yearEl.innerHTML = '<option value="all">Todos los años</option>'
+    + years.map(y => `<option value="${y}">${y}</option>`).join('')
+    + (hasNone ? '<option value="none">Sin año</option>' : '');
+  yearEl.value = seriesFilters.year;
+  if (yearEl.value !== seriesFilters.year) { seriesFilters.year = 'all'; yearEl.value = 'all'; }
+  document.getElementById('filter-score').value = seriesFilters.score;
+  document.getElementById('filter-sort').value = seriesFilters.sort;
+}
+
+function onSeriesFilterChange() {
+  seriesFilters = {
+    q: document.getElementById('filter-q').value,
+    year: document.getElementById('filter-year').value,
+    score: document.getElementById('filter-score').value,
+    sort: document.getElementById('filter-sort').value
+  };
+  renderEpisodes();
+}
+
+function clearSeriesFilters() {
+  seriesFilters = { q: '', year: 'all', score: 'all', sort: 'recent' };
+  document.getElementById('filter-q').value = '';
+  renderEpisodes();
+}
+
 function openSeries(id) {
   activeSeriesId = id;
   renderEpisodes();
@@ -532,6 +603,7 @@ function openSeriesModal(id = null) {
   document.getElementById('series-modal-title').innerText = s ? 'Editar Anime' : 'Agregar Nuevo Anime';
   document.getElementById('series-title').value = s ? s.title : '';
   document.getElementById('series-image').value = s ? s.image : '';
+  document.getElementById('series-year').value = s && s.year ? s.year : '';
   document.getElementById('series-status').value = s ? s.status : 'Viendo';
   document.getElementById('series-score').value = s && s.score ? String(s.score) : '';
   document.getElementById('series-review').value = s ? s.review : '';
@@ -551,8 +623,10 @@ function saveSeriesForm() {
   if (clash && clash.id !== id) return alert('Ya existe un anime con ese título.');
 
   const scoreRaw = parseInt(document.getElementById('series-score').value);
+  const yearRaw = parseInt(document.getElementById('series-year').value);
   const data = {
     title,
+    year: yearRaw >= 1950 && yearRaw <= 2100 ? yearRaw : null,
     image: document.getElementById('series-image').value.trim(),
     status: document.getElementById('series-status').value,
     score: scoreRaw >= 1 && scoreRaw <= 10 ? scoreRaw : null,
