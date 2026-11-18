@@ -1,7 +1,7 @@
 {
   "app": "boveda-olquiana",
   "version": 3,
-  "publishedAt": "2026-11-17T23:17:20.590Z",
+  "publishedAt": "2026-11-18T16:25:44.303Z",
   "data": {
     "olquia_bio": "Archivo personal de opiniones anime.",
     "olquia_avatar": "https://i.pinimg.com/736x/dd/5d/14/dd5d1463d9c8e5b1438027fe1cff085a.jpg",
@@ -15,9 +15,13 @@
     "2020:anime-anio": "tops/2020/anime-anio.png",
     "2020:waifus": "tops/2020/waifus.png",
     "2021:anime-anio": "tops/2021/anime-anio.jpg",
+    "2021:waifus": "tops/2021/waifus.png",
     "2022:anime-anio": "tops/2022/anime-anio.jpg",
+    "2022:waifus": "tops/2022/waifus.png",
     "2023:anime-anio": "tops/2023/anime-anio.png",
+    "2023:waifus": "tops/2023/waifus.png",
     "2024:anime-anio": "tops/2024/anime-anio.png",
+    "2024:waifus": "tops/2024/waifus.png",
     "2025:anime-anio": "tops/2025/anime-anio.jpg",
     "2025:decepciones": "tops/2025/decepciones.png",
     "2025:endings": "tops/2025/endings.png",
